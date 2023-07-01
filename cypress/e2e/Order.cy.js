@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import userIsReady from '../support/pages/UserIsReady';
-
+import HomePage from '../support/pages/HomePage';
+import orderObject from '../support/pages/OrderObject';
 
 let address = {
   country: faker.location.country(),
@@ -16,13 +17,34 @@ let card = {
   cardNumber: faker.finance.creditCardNumber('Mastercard').replace(/-/g, ''),
 }
 
+let user = {
+  email: faker.internet.email(),
+  password: faker.internet.password(),
+  answer: faker.lorem.word()
+}
+
+
 describe('Full order process', () => {
   it('order', () => {
-    cy.log('User login');
-    userIsReady.visit();
-    userIsReady.closeAllWindowsBeforeAuth();
-    userIsReady.SignUp();
-    userIsReady.SignIn();
+    cy.log('Withit Home Page');
+    HomePage.visit();
+    HomePage.closePopUps();
+
+    cy.log('User Sugn Up');
+    userIsReady.getLoginPage().click();
+    userIsReady.getEmailField().type(user.email);
+    userIsReady.getPasswordField().type(user.password);
+    userIsReady.getRepeatPasswordField().type(user.password);
+    userIsReady.getSecurityQuestion1().click();
+    userIsReady.putSecurityQuestion().click();
+    userIsReady.typeSecurityAnswer().type('Test');
+    userIsReady.getSubmitButton().click();
+
+    cy.log('User Sign In');
+    userIsReady.goToLogin().type(user.email);
+    userIsReady.getPasswordLogin().type(user.password);
+    userIsReady.getCheckbox().click();
+    userIsReady.getSubmitButtonLogin().click();
 
     cy.log('Add order to the basket');
     cy.get('.mat-focus-indicator.btn-basket.mat-button.mat-raised-button.mat-button-base.mat-primary.ng-star-inserted').eq(1).click().wait(1000);
@@ -31,36 +53,33 @@ describe('Full order process', () => {
 
 
     cy.log('Add new address');
-    cy.get('button.mat-raised-button[aria-label="Add a new address"][routerlink="/address/create"]').click();
-    cy.get('#mat-input-9').type(address.country);
-    cy.get('#mat-input-10').type(address.name);
-    cy.get('#mat-input-11').type(address.mobile);
-    cy.get('#mat-input-12').type(address.zip);
-    cy.get('#address').type(address.address);
-    cy.get('#mat-input-14').type(address.city);
-    cy.get('#submitButton').click();
-    cy.get('.mat-radio-outer-circle').first().click({ force: true });
-    cy.get('.btn-next > .mat-button-wrapper > span').click();
-    cy.get('.mat-radio-inner-circle').first().click();
-    cy.get('.nextButton > .mat-button-wrapper > span').click();
+    orderObject.GetAddNewAddressButton().click();
+    orderObject.TypeAddressCountry().type(address.country);
+    orderObject.TypeAddressName().type(address.name);
+    orderObject.TypeAddressMobile().type(address.mobile);
+    orderObject.TypeAddressZip().type(address.zip);
+    orderObject.TypeAddressAddress().type(address.address);
+    orderObject.TypeAddressCity().type(address.city);
+    orderObject.GetSubmitButtonOrder().click();
+    orderObject.GetRadioButton().first().click({ force: true });
+    orderObject.GetNextButton().click();
+    orderObject.GetDeliveryButton().first().click();
+    orderObject.GetNextFinalAddressButton().click();
 
     cy.log('Add payment card')
-    cy.get('#mat-expansion-panel-header-0 > .mat-expansion-indicator').click();
-    cy.get('#mat-input-16').type(card.cardHolder);
-    cy.get('#mat-input-17').type(card.cardNumber);
-    cy.get('#mat-input-18').invoke('val', '3').trigger('change');
-    cy.get('#mat-input-19').invoke('val', '2087').trigger('change');
-    cy.get('#submitButton > .mat-button-wrapper').click().wait(2000);
-    cy.get('.mat-radio-outer-circle').first().click({ force: true });
-    cy.get('.nextButton > .mat-button-wrapper > span').click();
-    cy.get('#checkoutButton').click();
+    orderObject.AddPaymentCard().click();
+    orderObject.TypeCardHolder().type(card.cardHolder);
+    orderObject.TypeCardNumber().type(card.cardNumber);
+    orderObject.TypeCardDetail1().invoke('val', '3').trigger('change');
+    orderObject.TypeCardDetail2().invoke('val', '2087').trigger('change');
+    orderObject.GetSubmitCardButton().click().wait(2000);
+    orderObject.GetRadioCardButton().first().click({ force: true });
+    orderObject.GetNextCardButton().click();
+    orderObject.GetCheckoutOrderButton().click();
 
 
     cy.log('Check order is successful')
     cy.get('.confirmation').contains('Thank you for your purchase!');
-
-
-
 
   })
 

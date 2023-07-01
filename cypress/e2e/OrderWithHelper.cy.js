@@ -2,6 +2,7 @@ import { search } from '../support/productHelper'
 import { faker } from '@faker-js/faker'
 import userIsReady from '../support/pages/UserIsReady';
 import orderObject from '../support/pages/OrderObject';
+import HomePage from '../support/pages/HomePage';
 
 let address = {
   country: faker.location.country(),
@@ -18,12 +19,30 @@ let card = {
 
 }
 
+let user = {
+  email: faker.internet.email(),
+  password: faker.internet.password(),
+  answer: faker.lorem.word()
+}
+
 describe('Order with helper', () => {
   it('OrderWithHelper', () => {
-    userIsReady.visit();
-    userIsReady.closeAllWindowsBeforeAuth();
-    userIsReady.SignUp();
-    userIsReady.SignIn();
+    HomePage.visit();
+    HomePage.closePopUps();
+
+    userIsReady.getLoginPage().click();
+    userIsReady.getEmailField().type(user.email);
+    userIsReady.getPasswordField().type(user.password);
+    userIsReady.getRepeatPasswordField().type(user.password);
+    userIsReady.getSecurityQuestion1().click();
+    userIsReady.putSecurityQuestion().click();
+    userIsReady.typeSecurityAnswer().type('Test');
+    userIsReady.getSubmitButton().click();
+    userIsReady.goToLogin().type(user.email);
+    userIsReady.getPasswordLogin().type(user.password);
+    userIsReady.getCheckbox().click();
+    userIsReady.getSubmitButtonLogin().click();
+
 
     cy.log('Searh helper');
     search();
@@ -33,13 +52,32 @@ describe('Order with helper', () => {
     cy.get('.mat-focus-indicator.checkout-button.mat-raised-button.mat-button-base.mat-primary').click().wait(1000);
 
     cy.log('Add new address');
-    orderObject.AddNewAddressToOrder();
+    orderObject.GetAddNewAddressButton().click();
+    orderObject.TypeAddressCountry().type(address.country);
+    orderObject.TypeAddressName().type(address.name);
+    orderObject.TypeAddressMobile().type(address.mobile);
+    orderObject.TypeAddressZip().type(address.zip);
+    orderObject.TypeAddressAddress().type(address.address);
+    orderObject.TypeAddressCity().type(address.city);
+    orderObject.GetSubmitButtonOrder().click();
+    orderObject.GetRadioButton().first().click({ force: true });
+    orderObject.GetNextButton().click();
+    orderObject.GetDeliveryButton().first().click();
+    orderObject.GetNextFinalAddressButton().click();
 
     cy.log('Add payment card')
-    orderObject.AddPaymentCard();
+    orderObject.AddPaymentCard().click();
+    orderObject.TypeCardHolder().type(card.cardHolder);
+    orderObject.TypeCardNumber().type(card.cardNumber);
+    orderObject.TypeCardDetail1().invoke('val', '3').trigger('change');
+    orderObject.TypeCardDetail2().invoke('val', '2087').trigger('change');
+    orderObject.GetSubmitCardButton().click().wait(2000);
+    orderObject.GetRadioCardButton().first().click({ force: true });
+    orderObject.GetNextCardButton().click();
+    orderObject.GetCheckoutOrderButton().click();
 
     cy.log('Check order is successful')
-    orderObject.CheckOrderIsSuccessful();
+    cy.get('.confirmation').contains('Thank you for your purchase!');
 
   })
 })

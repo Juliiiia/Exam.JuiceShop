@@ -21,7 +21,7 @@ describe('Feedback Form', () => {
         const sliderWidth = slider.width();
         const sliderOffsetLeft = slider.offset().left;
         const position = sliderOffsetLeft + sliderWidth * 0.75; 
-        cy.get('#rating').click(position);
+        cy.get('#rating').click(position).wait(4000);
       });
       cy.get('#submitButton > .mat-button-wrapper').click();
       cy.get('.mat-simple-snack-bar-content').contains('Thank you for your feedback.');
